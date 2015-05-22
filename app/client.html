@@ -1,0 +1,65 @@
+<html>
+	<head>
+		<title>Push notification server</title>
+		<style type="text/css">
+#input {
+width: 200px;
+}
+#messages {
+position: fixed;
+top: 40px;
+bottom: 8px;
+left: 8px;
+right: 8px;
+border: 1px solid #EEEEEE;
+padding: 8px;
+}
+</style>
+	</head>
+	<body>
+		<time></time>
+		<div id="container"></div>
+	<input type="text" id="input">
+<div id="messages"></div>
+	<script src="http://localhost:4000/socket.io/socket.io.js"></script>
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script>
+	// creating a new websocket
+	var socket = io.connect('http://localhost:4000');
+	// on every message recived we print the new datas inside the #container div
+	socket.on('notification', function (data) {
+		// convert the json string into a valid javascript object
+		var _data = JSON.parse(data);
+		$('#container').html(_data.test.sample);
+		$('time').html('Last Update:' + _data.time);
+	});
+	var messagesElement = document.getElementById('messages');
+var lastMessageElement = null;
+function addMessage(message) {
+var newMessageElement = document.createElement('div');
+var newMessageText = document.createTextNode(message);
+newMessageElement.appendChild(newMessageText);
+messagesElement.insertBefore(newMessageElement,
+lastMessageElement);
+lastMessageElement = newMessageElement;
+}
+socket.on('serverMessage', function(content) {
+addMessage(content);
+});
+socket.on('login', function() {
+var username = prompt('What username would you like to use?');
+socket.emit('login', username);
+});
+var inputElement = document.getElementById('input');
+inputElement.onkeydown = function(keyboardEvent) {
+if (keyboardEvent.keyCode === 13) {
+socket.emit('clientMessage', inputElement.value);
+inputElement.value = '';
+return false;
+} else {
+return true;
+}
+};
+	</script>
+	</body>
+</html>
